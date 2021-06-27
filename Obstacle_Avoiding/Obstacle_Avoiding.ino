@@ -7,9 +7,9 @@
 #define ECHO_PIN A5 
 #define MAX_DISTANCE 200
 #define MAX_SPEED 200 // sets max speed of DC  motors
-#define MAX_SPEED_OFFSET 20
+#define MAX_SPEED_OFFSET -2 //for right
 
-#define turn_delay 500   //need to test
+#define turn_delay 600  //need to test
 
 //defining motors,servo,sensor
 NewPing sonar(TRIG_PIN, ECHO_PIN, MAX_DISTANCE); 
@@ -38,18 +38,19 @@ void setup() {
 }
 
 void loop() {
+ distance = readPing();
  int distanceR = 0;
  int distanceL =  0;
  delay(40);
  Serial.println(distance);
  
- if(distance<=15)
+ if(distance<=30)
  {
   Serial.println("Object Detected");
   moveStop();
   delay(100);
   moveBackward();
-  delay(300);
+  delay(100);
   moveStop();
   delay(200);
   distanceR = lookRight();
@@ -60,15 +61,22 @@ void loop() {
   Serial.print("Distance Left = ");
   Serial.println(distanceL);
   delay(200);
-
-  if(distanceR>=distanceL)
+  if(distanceR>=30 || distanceL>=30)
   {
-    turnRight();
-    moveStop();
+    if(distanceR>=distanceL)
+    {
+      turnRight();
+      moveStop();
+    }
+    else if(distanceR<distanceL)
+    {
+      turnLeft();
+      moveStop();
+    }
   }
   else
   {
-    turnLeft();
+    turn180();
     moveStop();
   }
  }
@@ -76,9 +84,8 @@ void loop() {
  {
   moveForward();
  }
-
  //reseting the variable after the operations
- distance = readPing();
+ 
 }
 
 int lookRight()
@@ -162,3 +169,11 @@ void turnLeft() {
   motorL.run(FORWARD);     
   motorR.run(FORWARD);
 }  
+void turn180(){
+  Serial.println("Commencing U turn");
+  motorL.run(BACKWARD);
+  motorR.run(FORWARD);
+  delay(2*turn_delay);
+  motorL.run(FORWARD);
+  motorR.run(FORWARD);
+}
